@@ -18,6 +18,12 @@ def _init_database(db_path):
                     json_payload TEXT
                 )
             ''')
+            conn.execute('''
+                CREATE TABLE IF NOT EXISTS sync_metadata (
+                    key TEXT PRIMARY KEY,
+                    value TEXT
+                )
+            ''')
     except sqlite3.Error as e:
         raise RuntimeError(f"Failed to initialize database at {db_path}: {e}")
 
@@ -77,3 +83,38 @@ def get_activities(db_path='strava.db', **filters):
             return [dict(row) for row in rows]
     except sqlite3.Error as e:
         raise RuntimeError(f"Failed to query activities from database: {e}")
+
+
+def get_last_sync(db_path='strava.db'):
+    """Get timestamp of last successful sync."""
+    _init_database(db_path)
+
+    try:
+        with sqlite3.connect(db_path) as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                "SELECT value FROM sync_metadata WHERE key = 'last_sync'"
+            )
+            row = cursor.fetchone()
+
+            if row is None:
+                return None
+
+            return int(row[0])
+    except sqlite3.Error as e:
+        raise RuntimeError(f"Failed to get last sync timestamp: {e}")
+
+
+def update_last_sync(timestamp, db_path='strava.db'):
+    """Update timestamp of last successful sync."""
+    _init_database(db_path)
+
+    try:
+        with sqlite3.connect(db_path) as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                "INSERT OR REPLACE INTO sync_metadata (key, value) VALUES ('last_sync', ?)",
+                (str(timestamp),)
+            )
+    except sqlite3.Error as e:
+        raise RuntimeError(f"Failed to update last sync timestamp: {e}")
