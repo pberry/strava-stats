@@ -65,3 +65,32 @@ def refresh_access_token(client_id, client_secret, refresh_token):
         )
 
     return data
+
+
+def exchange_code_for_tokens(client_id, client_secret, code):
+    """Exchange authorization code for access and refresh tokens."""
+    response = requests.post(
+        'https://www.strava.com/oauth/token',
+        data={
+            'client_id': client_id,
+            'client_secret': client_secret,
+            'code': code,
+            'grant_type': 'authorization_code'
+        }
+    )
+
+    if response.status_code != 200:
+        raise RuntimeError(
+            f"Strava OAuth token exchange failed with status {response.status_code}. "
+            f"Response: {response.text}"
+        )
+
+    data = response.json()
+
+    if 'access_token' not in data:
+        raise RuntimeError(
+            f"Strava OAuth response missing 'access_token'. "
+            f"Response keys: {list(data.keys())}"
+        )
+
+    return data

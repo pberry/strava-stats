@@ -16,14 +16,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Query engine for filtering and aggregating activities
 - Hiking miles report with meter-to-mile conversion and monthly breakdown
 - Markdown formatter for WordPress-ready report output
-- CLI scripts: `refresh.py` for token refresh, `sync.py` for activity sync
+- CLI scripts: `authorize.py` for OAuth setup, `refresh.py` for token refresh, `sync.py` for activity sync
 - Comprehensive error handling with fail-fast principle
-- Full test suite with pytest (18 tests)
+- Full test suite with pytest (19 tests)
 - Python virtual environment setup
 - Git repository initialization
 
 ### Technical Details
-- `auth.py`: OAuth token refresh and .env file management
+- `auth.py`: OAuth token refresh, authorization code exchange, and .env file management
+- `authorize.py`: Interactive CLI script for OAuth authorization with activity:read scope
 - `strava_api.py`: Activity fetching with automatic pagination
 - `database.py`: SQLite storage with extracted fields + complete JSON payload
   - Metadata table for tracking last sync timestamp
