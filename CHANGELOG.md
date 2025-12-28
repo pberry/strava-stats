@@ -14,11 +14,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - SQLite database for storing activities with extracted fields and full JSON
 - Incremental sync with last sync timestamp tracking
 - Query engine for filtering and aggregating activities
-- Hiking miles report with meter-to-mile conversion and monthly breakdown
+- Activity miles reports with meter-to-mile conversion and monthly breakdown (Hikes, Runs, Walks)
+- Combined activity report showing all activity types in single document
 - Markdown formatter for WordPress-ready report output
-- CLI scripts: `authorize.py` for OAuth setup, `refresh.py` for token refresh, `sync.py` for activity sync
+- CLI scripts: `authorize.py` for OAuth setup, `refresh.py` for token refresh, `sync.py` for activity sync, `report.py` for combined reports
 - Comprehensive error handling with fail-fast principle
-- Full test suite with pytest (19 tests)
+- Full test suite with pytest (21 tests)
 - Python virtual environment setup
 - Git repository initialization
 
@@ -31,9 +32,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Upsert by activity_id prevents duplicates
 - `sync.py`: Incremental sync - fetches only new activities since last sync
 - `query_engine.py`: Filter by type, date range; aggregate distance, time, elevation
-- `hiking_report.py`: Calculate hiking miles for a given year with monthly breakdown
+- `activity_report.py`: Generic activity miles calculator for any activity type
   - Month-by-month aggregation with proper date boundaries
   - Leap year handling for February
+- `hiking_report.py`: Convenience wrapper around activity_report for hiking
+- `combined_report.py`: Format multiple activity types in single markdown report
+- `report.py`: CLI script to generate combined Hike/Run/Walk reports
 - `markdown_formatter.py`: Format hiking reports as Markdown
   - Title, total miles, total hikes
   - Monthly breakdown section (optional)
