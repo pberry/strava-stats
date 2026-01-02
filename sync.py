@@ -8,12 +8,23 @@ from dotenv import load_dotenv
 from strava_api import fetch_activities
 from database import save_activities, get_last_sync, update_last_sync
 
+# Lookback window in seconds to handle late-arriving activities
+# Activities may take time to sync from device to Strava
+LOOKBACK_WINDOW = int(os.getenv('STRAVA_SYNC_LOOKBACK_SECONDS', 3600))  # Default: 1 hour
+
 
 def sync_activities(access_token, db_path='strava.db'):
-    """Fetch activities since last sync and save to database."""
+    """Fetch activities since last sync and save to database.
+
+    Applies a lookback window to handle race conditions where activities
+    may not have synced to Strava yet when the sync runs.
+    """
     last_sync = get_last_sync(db_path=db_path)
 
-    activities = fetch_activities(access_token=access_token, after=last_sync)
+    # Apply lookback window to catch late-arriving activities
+    sync_from = last_sync - LOOKBACK_WINDOW if last_sync else None
+
+    activities = fetch_activities(access_token=access_token, after=sync_from)
 
     if activities:
         save_activities(activities, db_path=db_path)

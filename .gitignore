@@ -23,6 +23,8 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+.pytest_cache/
+*.log
 
 # Database
 *.db
@@ -39,3 +41,6 @@ wheels/
 # OS
 .DS_Store
 Thumbs.db
+
+# Claude Code
+.claude/
