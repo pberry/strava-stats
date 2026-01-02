@@ -7,7 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-01-01
+
 ### Added
+- Comprehensive README.md with setup and usage instructions
+- MIT LICENSE file
+- CONTRIBUTING.md with contribution guidelines
+- Detailed OAuth authorization flow documentation
+- Token refresh documentation and usage instructions
 - Strava API authentication with OAuth token refresh
 - Automatic token refresh and .env file updates
 - Activity fetching from Strava API with pagination support
@@ -22,6 +29,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Full test suite with pytest (21 tests)
 - Python virtual environment setup
 - Git repository initialization
+
+### Changed
+- Updated .gitignore to include .pytest_cache/, *.log, and .claude/
 
 ### Technical Details
 - `auth.py`: OAuth token refresh, authorization code exchange, and .env file management
