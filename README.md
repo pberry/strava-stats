@@ -5,11 +5,13 @@ A Python tool to sync your Strava activities to a local SQLite database and gene
 ## Features
 
 - OAuth 2.0 authentication with Strava API
-- Automatic token refresh
+- Smart automatic token refresh (only when expired)
 - Incremental activity sync to SQLite database
 - Generate yearly activity reports by type (Hikes, Runs, Walks)
+- **Automated weekly blog posting to WordPress**
 - Markdown-formatted output (WordPress-ready)
 - Monthly breakdown of miles and activity counts
+- Cron-ready CLI for hands-off operation
 
 ## Prerequisites
 
@@ -147,19 +149,64 @@ Example output:
 ...
 ```
 
+## Automated Weekly Posting
+
+Post a weekly activity summary to WordPress automatically.
+
+### WordPress Setup
+
+1. In WordPress, go to **Users → Profile → Application Passwords**
+2. Create a new application password
+3. Add to `.env`:
+```bash
+WP_URL=https://yourblog.com
+WP_USERNAME=pat
+WP_APP_PASSWORD=xxxx xxxx xxxx xxxx
+```
+
+### Manual Run
+
+```bash
+python weekly_post.py
+```
+
+### Cron Setup (Sunday 6pm)
+
+```bash
+crontab -e
+```
+
+Add:
+```
+0 18 * * 0 cd /path/to/strava-stats && ./venv/bin/python weekly_post.py
+```
+
+Or for macOS, create `~/Library/LaunchAgents/com.strava-stats.weekly-post.plist`.
+
+The script:
+1. Refreshes Strava token (only if expired)
+2. Syncs new activities
+3. Generates weekly report with individual activity details
+4. Posts to WordPress as a published post
+5. Tracks last post time for incremental reporting
+
 ## Project Structure
 
 ```
 strava-stats/
 ├── authorize.py          # OAuth authorization CLI
-├── refresh.py           # Token refresh CLI
+├── refresh.py           # Token refresh CLI (superseded by token_manager)
 ├── sync.py              # Activity sync CLI
 ├── report.py            # Report generation CLI
+├── weekly_post.py       # Weekly blog post CLI (cron entry point)
 ├── auth.py              # OAuth token management
+├── token_manager.py     # Smart token refresh with expiry tracking
 ├── strava_api.py        # Strava API client
 ├── database.py          # SQLite database operations
 ├── activity_report.py   # Activity miles calculator
 ├── combined_report.py   # Multi-activity report formatter
+├── weekly_report.py     # Weekly activity report formatter
+├── wordpress.py         # WordPress REST API client
 ├── markdown_formatter.py # Markdown output formatting
 ├── query_engine.py      # Activity filtering and aggregation
 ├── test_*.py            # Test files
@@ -203,6 +250,10 @@ The SQLite database (`strava.db`) contains:
 | `STRAVA_ACCESS_TOKEN` | OAuth access token (expires after 6 hours, auto-refreshed) | Auto |
 | `STRAVA_REFRESH_TOKEN` | OAuth refresh token (used to get new access tokens) | Auto |
 | `STRAVA_SYNC_LOOKBACK_SECONDS` | Sync lookback window in seconds | No (default: 3600) |
+| `STRAVA_TOKEN_EXPIRES_AT` | Token expiry timestamp (managed automatically) | Auto |
+| `WP_URL` | WordPress site URL | For weekly posting |
+| `WP_USERNAME` | WordPress username | For weekly posting |
+| `WP_APP_PASSWORD` | WordPress Application Password | For weekly posting |
 
 ## License
 

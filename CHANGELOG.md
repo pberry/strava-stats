@@ -7,6 +7,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-02-28
+
+### Added
+- Automated weekly blog posting to WordPress via REST API
+- Token manager with smart auto-refresh (only refreshes when expired)
+- `STRAVA_TOKEN_EXPIRES_AT` tracking in .env for intelligent token refresh
+- Individual activity query with date range and type filters
+- Weekly report formatter with activity details (name, distance, time, elevation)
+- WordPress client with HTTP Basic Auth (Application Passwords)
+- Simple markdown-to-HTML converter for WordPress posting
+- CLI orchestrator (`weekly_post.py`) — single entry point for cron automation
+- `last_post_time` tracking in sync_metadata for incremental posting
+- 27 new tests (total: 56)
+
+### Changed
+- `update_env_tokens()` now accepts optional `expires_at` parameter
+- Token refresh is now automatic — no need to manually run `refresh.py`
+
+### New Environment Variables
+- `WP_URL` — WordPress site URL
+- `WP_USERNAME` — WordPress username
+- `WP_APP_PASSWORD` — WordPress Application Password
+- `STRAVA_TOKEN_EXPIRES_AT` — managed automatically by token manager
+
+### New Files
+- `token_manager.py` — Smart token refresh (replaces manual `refresh.py` workflow)
+- `weekly_report.py` — Weekly activity report formatter
+- `wordpress.py` — WordPress REST API client
+- `weekly_post.py` — Cron-ready CLI orchestrator
+
 ## [0.2.0] - 2026-01-01
 
 ### Added
