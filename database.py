@@ -85,6 +85,43 @@ def get_activities(db_path='strava.db', **filters):
         raise RuntimeError(f"Failed to query activities from database: {e}")
 
 
+def get_individual_activities(start_date=None, end_date=None, activity_type=None, db_path='strava.db'):
+    """Query individual activities with optional filters."""
+    _init_database(db_path)
+
+    try:
+        with sqlite3.connect(db_path) as conn:
+            query = '''
+                SELECT activity_id, date, type, distance, time, elevation,
+                       json_extract(json_payload, '$.name') as name
+                FROM activities
+            '''
+            conditions = []
+            params = []
+
+            if start_date:
+                conditions.append("date >= ?")
+                params.append(start_date)
+            if end_date:
+                conditions.append("date <= ?")
+                params.append(end_date + "T23:59:59Z")
+            if activity_type:
+                conditions.append("type = ?")
+                params.append(activity_type)
+
+            if conditions:
+                query += " WHERE " + " AND ".join(conditions)
+
+            query += " ORDER BY date ASC"
+
+            conn.row_factory = sqlite3.Row
+            cursor = conn.cursor()
+            cursor.execute(query, params)
+            return [dict(row) for row in cursor.fetchall()]
+    except sqlite3.Error as e:
+        raise RuntimeError(f"Failed to query individual activities: {e}")
+
+
 def get_last_sync(db_path='strava.db'):
     """Get timestamp of last successful sync."""
     _init_database(db_path)

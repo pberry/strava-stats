@@ -2,7 +2,7 @@
 import requests
 
 
-def update_env_tokens(access_token, refresh_token, env_file='.env'):
+def update_env_tokens(access_token, refresh_token, env_file='.env', expires_at=None):
     """Update .env file with new access and refresh tokens."""
     try:
         with open(env_file, 'r') as f:
@@ -14,6 +14,7 @@ def update_env_tokens(access_token, refresh_token, env_file='.env'):
 
     access_token_found = False
     refresh_token_found = False
+    expires_at_found = False
     updated_lines = []
 
     for line in lines:
@@ -23,6 +24,9 @@ def update_env_tokens(access_token, refresh_token, env_file='.env'):
         elif line.startswith('STRAVA_REFRESH_TOKEN='):
             updated_lines.append(f'STRAVA_REFRESH_TOKEN={refresh_token}\n')
             refresh_token_found = True
+        elif line.startswith('STRAVA_TOKEN_EXPIRES_AT=') and expires_at is not None:
+            updated_lines.append(f'STRAVA_TOKEN_EXPIRES_AT={expires_at}\n')
+            expires_at_found = True
         else:
             updated_lines.append(line)
 
@@ -30,6 +34,9 @@ def update_env_tokens(access_token, refresh_token, env_file='.env'):
         raise RuntimeError(f"STRAVA_ACCESS_TOKEN not found in {env_file}")
     if not refresh_token_found:
         raise RuntimeError(f"STRAVA_REFRESH_TOKEN not found in {env_file}")
+
+    if expires_at is not None and not expires_at_found:
+        updated_lines.append(f'STRAVA_TOKEN_EXPIRES_AT={expires_at}\n')
 
     try:
         with open(env_file, 'w') as f:
