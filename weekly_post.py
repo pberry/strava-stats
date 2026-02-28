@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Weekly post CLI orchestrator."""
+import argparse
 import os
 import sys
 import time
@@ -10,6 +11,13 @@ from sync import sync_activities
 from database import get_individual_activities, _init_database
 from weekly_report import format_weekly_report
 from wordpress import create_post, load_wp_credentials
+
+
+def get_week_boundaries(today):
+    """Return (start_date, end_date) strings for the Mon-Sun week containing today."""
+    monday = today - timedelta(days=today.weekday())
+    sunday = monday + timedelta(days=6)
+    return (monday.strftime('%Y-%m-%d'), sunday.strftime('%Y-%m-%d'))
 
 
 def _get_last_post_time(db_path='strava.db'):
@@ -42,24 +50,16 @@ def _update_last_post_time(timestamp, db_path='strava.db'):
         raise RuntimeError(f"Failed to update last post time: {e}")
 
 
-def main(env_file='.env', db_path='strava.db'):
+def main(env_file='.env', db_path='strava.db', dry_run=False):
     """Main entry point for weekly post."""
     try:
         access_token = get_access_token(env_file=env_file)
 
         sync_activities(access_token=access_token, db_path=db_path)
 
-        last_post = _get_last_post_time(db_path=db_path)
         now = int(time.time())
-
-        if last_post:
-            start_dt = datetime.fromtimestamp(last_post, tz=timezone.utc)
-        else:
-            start_dt = datetime.fromtimestamp(now, tz=timezone.utc) - timedelta(days=7)
-
-        end_dt = datetime.fromtimestamp(now, tz=timezone.utc)
-        start_date = start_dt.strftime('%Y-%m-%d')
-        end_date = end_dt.strftime('%Y-%m-%d')
+        today = datetime.fromtimestamp(now, tz=timezone.utc).date()
+        start_date, end_date = get_week_boundaries(today)
 
         activities = get_individual_activities(
             start_date=start_date,
@@ -73,9 +73,14 @@ def main(env_file='.env', db_path='strava.db'):
 
         report = format_weekly_report(activities, start_date=start_date, end_date=end_date)
 
-        wp_creds = load_wp_credentials(env_file=env_file)
-
         title = f"Weekly Activities: {_format_title_date_range(start_date, end_date)}"
+
+        if dry_run:
+            print(f"[dry-run] Title: {title}")
+            print(report)
+            return 0
+
+        wp_creds = load_wp_credentials(env_file=env_file)
 
         result = create_post(
             wp_url=wp_creds['wp_url'],
@@ -106,4 +111,7 @@ def _format_title_date_range(start_date, end_date):
 
 
 if __name__ == '__main__':
-    sys.exit(main())
+    parser = argparse.ArgumentParser(description='Post weekly activity report to WordPress.')
+    parser.add_argument('--dry-run', action='store_true', help='Print report without posting.')
+    args = parser.parse_args()
+    sys.exit(main(dry_run=args.dry_run))

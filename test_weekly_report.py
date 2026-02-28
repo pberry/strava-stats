@@ -70,6 +70,19 @@ def test_activity_shows_details():
     assert "100 ft" in report
 
 
+def test_activity_name_links_to_strava():
+    """Each activity name is a markdown link to its Strava activity page."""
+    report = format_weekly_report(
+        _sample_activities(),
+        start_date='2026-02-17',
+        end_date='2026-02-23',
+    )
+
+    assert "[Morning Run](https://www.strava.com/activities/1)" in report
+    assert "[Trail Hike](https://www.strava.com/activities/2)" in report
+    assert "[Evening Run](https://www.strava.com/activities/3)" in report
+
+
 def test_converts_meters_to_miles():
     """Converts distance from meters to miles (÷ 1609.34)."""
     activities = [{

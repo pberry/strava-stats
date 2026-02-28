@@ -45,11 +45,12 @@ def _format_activity_line(activity):
     date = datetime.strptime(activity['date'][:10], '%Y-%m-%d')
     day_str = date.strftime('%a %m/%d')
     name = activity['name']
+    strava_url = f"https://www.strava.com/activities/{activity['activity_id']}"
     distance = activity['distance'] / METERS_PER_MILE
     time_str = _format_duration(activity['time'])
     elevation = activity['elevation'] * METERS_TO_FEET
 
-    return f"- **{day_str}**: {name} — {distance:.2f} mi, {time_str}, {elevation:,.0f} ft"
+    return f"- **{day_str}**: [{name}]({strava_url}) — {distance:.2f} mi, {time_str}, {elevation:,.0f} ft"
 
 
 def _format_duration(seconds):
